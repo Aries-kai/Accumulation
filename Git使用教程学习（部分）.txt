@@ -1,0 +1,233 @@
+// Git 使用教程
+// 20190331
+// 廖雪峰的官方网站
+// https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000
+// 具体实践流程 请直接翻看到最后。
+
+
+一、创建版本库（仓库）repository:
+	1、创建一个空目录；
+	2、通过 “git init” 将该目录变成 Git 可以管理的仓库；
+			当前目录下多了一个.git的目录，这个目录是Git来跟踪管理版本库的。
+			所有的版本控制系统，其实只能跟踪文本文件的改动，比如TXT文件，网页，所有的程序代码等等；而图片、视频这些二进制文件，虽然也能由版本控制系统管理，但没法跟踪文件的变化，只能把二进制文件每次改动串起来，也就是只知道图片从100KB改成了120KB，但到底改了啥，版本控制系统不知道，也没法知道。
+	3、在仓库中添加文件：
+		⑴、添加一个文件（如 readme.txt)在仓库目录下；
+		⑵、告诉Git，把文件添加到仓库
+				git add readme.txt
+		
+		⑶、告诉Git，把文件提交到仓库
+				git commit -m "write a readme file"
+				
+		
+二、时光机穿梭
+	1、状态查询
+		⑴、查看仓库当前状态
+				git status
+				
+		⑵、查看修改内容
+				git diff readme.txt
+				
+	2、版本回退
+		⑴、查看历史记录
+				git log
+				
+			可加上参数	git log --pretty=oneline
+				其中前面显示的一长串数字是 “commit id（版本号）”。
+				
+		⑵、跳转回到先前版本
+			在Git中，用HEAD表示当前版本，上一个版本就是HEAD^，上上一个版本就是HEAD^^。
+			回到上一个版本：
+				git reset  --hard HEAD^
+				
+			此时，通过 git log 查看版本库的状态会发现，先前最新的版本没有了，只要上面命令窗口还没有关掉，找到其 commit id 然后通过命令
+				git reset --hard 1094a
+			使用commit id 的前几位即可找回；
+			
+			Git提供了一个命令git reflog用来记录你的每一次命令；
+			
+	3、工作区与暂存区
+		⑵、工作区————之前新建的目录；
+		⑵、版本库（repository）————工作区下的隐藏目录 .git，其中包含：
+			①、称为 stage 的暂存区；
+			②、Git自动创建的第一个分支 master;
+			③、指向 master 的指针 HEAD；
+				***分支和HEAD 后续讲解
+				
+			前面所讲，把文件添加到库中时，需要两步，即：
+				第一步，用 git add 把文件添加进去，实际上把文件修改添加到暂存区；
+				第二步，用 git commit 提交更改，实际上就是把暂存区的所有内容提交到当前分支。
+				
+	4、管理修改
+		为什么Git比其他版本控制系统设计得优秀，因为Git跟踪并管理的是修改，而非文件。
+		
+		⑴、提交后，用git diff HEAD -- readme.txt命令可以查看工作区和版本库里面最新版本的区别；
+			
+	5、撤销修改
+		
+		⑴、（清理工作区修改）
+			用命令
+					git checkout -- readme.txt
+				把readme.txt文件在工作区的修改全部撤销，这里有两种情况：
+
+			一种是readme.txt自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；
+
+			一种是readme.txt已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。
+			
+		⑵、（清理暂存区修改）已经添加到暂存区，但是还没有提交：
+			用命令
+					git reset HEAD <file>
+				可以把暂存区的修改撤销掉（unstage），重新放回工作区；
+				
+	6、删除文件
+		⑵、要从版本库中删除该文件，那就用命令git rm删掉，并且git commit：
+		⑵、另一种情况是删错了，因为版本库里还有，所以可以很轻松地把误删的文件恢复到最新版本：
+					git checkout -- test.txt
+					
+					
+三、远程仓库
+	1、连接本地与 Github:
+		⑴、创建SSH Key。
+			在用户主目录（C:\Users\***）下查看是否有 .ssh 目录，如果有，再看看有没有 id_rsa 和 id_rsa.pub，如果已经有了，直接下一步，若没有，则打开Shell（Windows 下 Git Bash），创建 SSH Key。
+					ssh-keygen -t rsa -C "youremail@example.com"
+				然后一路回车，使用默认值即可。其中 id_rsa 是私钥，id_rsa.pub是公钥。
+
+		⑵、登入GitHub，打开“Account setting"，”SSH Keys“页面，然后点击“Add SSH Keys",填上任意Title，在文本框中粘贴 id_rsa.pub文件内容（即公钥）；
+				
+	2、添加远程库
+			现在的情景是，你已经在本地创建了一个Git仓库后，又想在GitHub创建一个Git仓库，并且让这两个仓库进行远程同步，这样，GitHub上的仓库既可以作为备份，又可以让其他人通过该仓库来协作，真是一举多得。
+		⑴、登入GitHub，然后，在右上角找到“Create a new repo”按钮，创建一个新的仓库，在Repository name填入[库名称]，其他保持默认设置，点击“Create repository”按钮，就成功地创建了一个新的Git仓库（此时这个仓库是空的）。
+		
+		⑵、根据提示，可以把一个已有的本地仓库与之关联，然后把本地仓库的内容推送到GitHub仓库。
+			在本地仓库下运行命令：
+					git remote add origin git@github.com:[GitHub账户名]/[库名称].git
+				远程库的名字是origin，这是Git默认的叫法，也可以改成别的但是origin这个名字一看就知道是远程库
+
+		⑶、把本地库的所有内容推送到远程库上：
+			在本地仓库下运行命令：
+					git push -u origin master
+				由于远程库是空的，我们第一次推送master分支时，加上了-u参数。
+				Git不但会把本地的master分之内容推送给远程新的master分支，还会把本地的master分支和远程的分支关联，在以后的推送或者拉取是可以简化命令。
+				
+		⑷、之后，只要本地做了提交，就可以通过命令：
+					git push origin master
+				把本地master分支的最新修改推送至Github。
+				
+		⑸、SSH 警告
+			第一次使用Git的 clone 或者 push 命令连接GitHub时会得到一个警告：
+				{	
+					The authenticity of host 'github.com (xx.xx.xx.xx)' can't be established.
+					RSA key fingerprint is xx.xx.xx.xx.xx.
+					Are you sure you want to continue connecting (yes/no)?
+				}
+				这是因为Git使用SSH连接，而SSH连接在第一次验证GitHub服务器的Key时，需要你确认GitHub的Key的指纹信息是否真的来自GitHub的服务器，输入yes回车即可。
+			
+			Git会输出一个警告，告诉你已经把GitHub的Key添加到本机的一个信任列表里了：
+				Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+				这个警告只会出现一次，后面的操作就不会有任何警告了。
+				
+	3、从远程库中克隆
+			假设我们从零开发，那么最好的方式是先创建远程库，然后，从远程库克隆。
+		⑴、首先，登陆GitHub，创建一个新的仓库；
+		⑵、我们勾选Initialize this repository with a README，这样GitHub会自动为我们创建一个README.md文件。创建完毕后，可以看到README.md文件；
+		⑶、用命令：
+					git clone git@github.com:michaelliao/gitskills.git
+				克隆一个本地库。
+				
+			GitHub给出的地址不止一个，这样的地址。实际上，Git支持多种协议，默认的git使用ssh，但也可以使用https等其他协议。
+			使用https除了速度慢以外，还有个最大的麻烦是每次推送都必须输入口令，但是在某些只开放http端口的公司内部就无法使用ssh协议而只能用https。
+			
+			
+		
+	***附加：SSH 为 Secure Shell 的缩写，由 IETF 的网络小组（Network Working Group）所制定；SSH 为建立在应用层基础上的安全协议。SSH 是目前较可靠，专为远程登录会话和其他网络服务提供安全性的协议。利用 SSH 协议可以有效防止远程管理过程中的信息泄露问题。
+	
+	
+四、分支管理
+	分支在实际中有什么用呢？假设你准备开发一个新功能，但是需要两周才能完成，第一周你写了50%的代码，如果立刻提交，由于代码还没写完，不完整的代码库会导致别人不能干活了。如果等代码全部写完再一次提交，又存在丢失每天进度的巨大风险。
+	现在有了分支，就不用怕了。你创建了一个属于你自己的分支，别人看不到，还继续在原来的分支上正常工作，而你在自己的分支上干活，想提交就提交，直到开发完毕后，再一次性合并到原来的分支上，这样，既安全，又不影响别人工作。
+	其他版本控制系统如SVN等都有分支管理，但是用过之后你会发现，这些版本控制系统创建和切换分支比蜗牛还慢，简直让人无法忍受，结果分支功能成了摆设，大家都不去用。
+	但Git的分支是与众不同的，无论创建、切换和删除分支，Git在1秒钟之内就能完成！无论你的版本库是1个文件还是1万个文件。
+	
+	1、创建和合并分支
+	
+	
+	
+	
+	
+	
+	
+	
+	
+具体实践流程：
+/*//测试
+1、找到要建仓库的文件夹，右键”文件夹“，选”Git Bash here“
+2、输入命令：
+		git init 
+3、创建 SSH Key：
+		ssh-keygen -t rsa -C "youremail@example.com"
+	然后一路回车，使用默认值即可。
+4、登入 GitHub——settings——SSH and GPG keys——New SSH key
+	Title : style note
+	Key   : (Windows 用户目录（C:\Users\Administrator\.ssh）下，id_rsa.pub 中的内容）
+5、将工作区的所有内容添加到仓库中
+		git add .
+	提交：
+		git commit -m "MFC slavecomputer--framework partion showpic opencv CvvImage_class"
+6、将本地关联到GitHub上（新建空仓库）
+		git remote add origin https://github.com/Aries-kai/whu_hpa.git
+		git push -u origin master
+		
+	warning:warning: File SlaveComputer/SlaveComputer/SlaveComputer/Debug/SlaveComputer.pch is 53.31 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+
+	即 最大文件超限了；
+		https://blog.csdn.net/qq_38131812/article/details/84065555
+		
+		⑴、安装 GitHub LFS
+		⑵、本地仓库初始化
+			git init
+			git lfs install
+		⑶、用git lfs track命令跟踪特定后缀的大文件，或者也可以直接编辑.gitattributes
+			git lfs track "*."
+		⑷、然后将.gitattributes文件添加进git仓库：
+			git add .gitattributes
+		⑸、接下来就可以像平时使用git那样正常使用了，可以将大文件提交到GitHub了
+			git add xxx
+			git commit -m "update"
+			git push origin master
+		
+		***注：安装完 LFS 后，git 使用报错
+				fatal: TaskCanceledException encountered.
+			   解决方法：git config –-global credential.helper manager 
+	
+***附：
+		⑴配置Git 上的用户名和邮箱
+			git config --global user.name ""
+			git config --global user.email ""
+*/
+1、找到要建仓库的文件夹，右键”文件夹“，选”Git Bash here“
+2、本地仓库初始化，输入命令：
+		git init 
+		git lfs install
+		
+	用git lfs track命令跟踪特定后缀的大文件（大于50M），或者也可以直接编辑.gitattributes
+		git lfs track "*."
+3、创建 SSH Key：（查看目录C:\Users\Administrator\.ssh下，若有id_rsa id_rsa.pub,说明已经配过，即可跳过）
+		ssh-keygen -t rsa -C "youremail@example.com"
+	然后一路回车，使用默认值即可。
+4、登入 GitHub——settings——SSH and GPG keys——New SSH key
+	Title : style note
+	Key   : (Windows 用户目录（C:\Users\Administrator\.ssh）下，id_rsa.pub 中的内容）
+5、将工作区的所有内容添加到仓库中
+		git add .
+	提交：
+		git commit -m "MFC slavecomputer--framework partion showpic opencv CvvImage_class"
+6、将本地关联到GitHub上（新建空仓库）
+		git remote add origin https://github.com/Aries-kai/whu_hpa.git
+		git push -u origin master
+		
+7、获取GitHub上更新的内容
+		git pull origin master
+	
+***附：
+		⑴配置Git 上的用户名和邮箱
+			git config --global user.name ""
+			git config --global user.email ""	
